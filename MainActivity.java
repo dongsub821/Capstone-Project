@@ -1,58 +1,93 @@
-package com.example.caucse.myapplication;
+package com.example.caucse.db;
 
-import android.app.Activity;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.widget.ImageView;
+import android.support.v7.app.AppCompatActivity;
+import android.widget.TextView;
 
-import java.io.IOException;
-import java.io.InputStream;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-public class MainActivity extends Activity {
-    ImageView imView;
-    String imgUrl = "http://teamssdweb.kr/Cam_image/";
-        Bitmap bmImg;
-        back task;
+public class MainActivity extends AppCompatActivity {
+    // 데이터를 받아올 PHP 주소
+    String url = "http://teamssdweb.kr/DB/DB.php";
+    // 데이터를 보기위한 TextView
+    TextView tv;
+    // PHP를 읽어올때 사용할 변수
+    public GettingPHP gPHP;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
 
-        @Override
-        protected void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            setContentView(R.layout.activity_main);
-            task = new back();
+        gPHP = new GettingPHP();
 
-            imView = (ImageView) findViewById(R.id.imageView);
-            task.execute(imgUrl+"a1.png");
+        tv = (TextView)findViewById(R.id.textView);
+
+        gPHP.execute(url);
     }
 
-    private class back extends AsyncTask<String, Integer,Bitmap>{
+
+
+    class GettingPHP extends AsyncTask<String, Integer, String> {
 
         @Override
-        protected Bitmap doInBackground(String... urls) {
-            // TODO Auto-generated method stub
-            try{
-                URL myFileUrl = new URL(urls[0]);
-                HttpURLConnection conn = (HttpURLConnection)myFileUrl.openConnection();
-                conn.setDoInput(true);
-                conn.connect();
+        protected String doInBackground(String... params) {
+            StringBuilder jsonHtml = new StringBuilder();
+            try {
+                URL phpUrl = new URL(params[0]);
+                HttpURLConnection conn = (HttpURLConnection)phpUrl.openConnection();
 
-                InputStream is = conn.getInputStream();
+                if ( conn != null ) {
+                    conn.setConnectTimeout(10000);
+                    conn.setUseCaches(false);
 
-                bmImg = BitmapFactory.decodeStream(is);
-
-
-            }catch(IOException e){
+                    if ( conn.getResponseCode() == HttpURLConnection.HTTP_OK ) {
+                        BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+                        while ( true ) {
+                            String line = br.readLine();
+                            if ( line == null )
+                                break;
+                            jsonHtml.append(line + "\n");
+                        }
+                        br.close();
+                    }
+                    conn.disconnect();
+                }
+            } catch ( Exception e ) {
                 e.printStackTrace();
             }
-            return bmImg;
+            return jsonHtml.toString();
         }
 
-        protected void onPostExecute(Bitmap img){
-            imView.setImageBitmap(bmImg);
-        }
+        protected void onPostExecute(String str) {
+            try {
+                JSONObject jObject = new JSONObject(str);
+                JSONArray results = jObject.getJSONArray("result");
+                String txt = "";
+                for ( int i = 0; i < results.length(); ++i ) {
+                    JSONObject temp = results.getJSONObject(i);
+                    txt +=temp.get("Image_ID");
+                    txt +=" ";
+                    txt +=temp.get("Time");
+                    txt +=" ";
+                    txt +=temp.get("Time_detail");
+                    txt +="\n";
 
+
+                }
+                tv.setText(txt);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }
+
+
