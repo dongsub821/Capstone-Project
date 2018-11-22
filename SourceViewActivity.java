@@ -16,25 +16,43 @@ import java.net.URL;
 public class SourceViewActivity extends AppCompatActivity {
 
 
-    int imageName;
+    String imageName;
     Bitmap bmImg;
     ImageView imView;
     String imgUrl = "http://teamssdweb.kr/Cam_image/";
     String url = "http://teamssdweb.kr/DB/DB.php";
     back task;
-    ImageView iv;
+    ImageView iv1,iv2,iv3,iv4;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_source_view);
-        imageName = getIntent().getIntExtra("imageName", 1);
+        imageName = getIntent().getStringExtra("imageName");
         task = new back();
-        task.execute(imgUrl+imageName+".png");
+        task.execute(imgUrl+imageName+".jpg");
 
-        iv = findViewById(R.id.imageView);
+        iv1 = findViewById(R.id.imageView2);
+        iv2 = findViewById(R.id.imageView3);
+        iv3 = findViewById(R.id.imageView4);
+        iv4 = findViewById(R.id.imageView5);
 
-        iv.setOnClickListener(new View.OnClickListener() {
+        iv1.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                finish();
+            }
+        });
+        iv2.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                finish();
+            }
+        });
+        iv3.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                finish();
+            }
+        });
+        iv4.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 finish();
             }
@@ -64,7 +82,11 @@ public class SourceViewActivity extends AppCompatActivity {
         }
 
         protected void onPostExecute(Bitmap img){
-            iv.setImageBitmap(bmImg);
+
+            iv1.setImageBitmap(bmImg);
+            iv2.setImageBitmap(bmImg);
+            iv3.setImageBitmap(bmImg);
+            iv4.setImageBitmap(bmImg);
         }
 
     }
